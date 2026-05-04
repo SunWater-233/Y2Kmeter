@@ -19,9 +19,8 @@ set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>" CACHE STR
 
 project(Y2Kmeter VERSION 1.6.0 LANGUAGES C CXX)
 
-# 让 Ninja/Makefile 生成 compile_commands.json，供 clangd 精确读取
-# include path、宏定义和 JUCE 生成头路径。Visual Studio 生成器会忽略该文件生成，
-# 所以仓库里额外提供了 clangd-msvc preset 使用 Ninja。
+# 让 Ninja 生成 compile_commands.json，供 clangd 精确读取 include path、
+# 宏定义和 JUCE 生成头路径。当前主流程统一使用 Ninja + MSVC。
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # 当外部环境设置了 CMAKE_GENERATOR_PLATFORM 但未设置 CMAKE_GENERATOR 时，
@@ -73,11 +72,10 @@ endif()
 
 include(FetchContent)
 
-# clangd 的专用 Ninja 配置需要 compile_commands.json，但 JUCE 默认会在配置期
-# 递归再开一个子 CMake/Ninja 去单独构建 juceaide。Windows 上如果 PATH 里同时有
-# MinGW，这个子配置很容易重新选回 gcc/g++，导致 JUCE 直接以 "MinGW is not
-# supported" 失败。这里改为在当前工具链里直接构建 helper tool，避免递归子配置
-# 的编译器漂移。
+# Ninja + MSVC 主流程需要 compile_commands.json，但 JUCE 默认会在配置期递归再开
+# 一个子 CMake/Ninja 去单独构建 juceaide。Windows 上如果 PATH 里同时有 MinGW，
+# 这个子配置很容易重新选回 gcc/g++，导致 JUCE 直接以 "MinGW is not supported"
+# 失败。这里改为在当前工具链里直接构建 helper tool，避免递归子配置的编译器漂移。
 set(JUCE_BUILD_HELPER_TOOLS ON CACHE BOOL
     "Build JUCE helper tools in the current configure pass" FORCE)
 
@@ -87,6 +85,15 @@ FetchContent_Declare(
         GIT_TAG 8.0.12
 )
 FetchContent_MakeAvailable(juce)
+
+# JUCE 8.0.12 的 juceaide CMake 默认在 Windows 下固定使用 /MT，即使当前配置是
+# Debug 也不会切到 /MTd；配合 _DEBUG 宏会导致 Debug 链接阶段缺少 _malloc_dbg /
+# _free_dbg 等符号。这里在主工程侧覆盖回与项目一致的静态 CRT 策略。
+if (TARGET juceaide AND MSVC)
+  set_property(TARGET juceaide PROPERTY
+    MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+  target_compile_options(juceaide PRIVATE /utf-8)
+endif()
 
 if (TARGET juceaide AND NOT TARGET juce::juceaide)
   add_executable(juce::juceaide ALIAS juceaide)

@@ -1,5 +1,5 @@
 CompileFlags:
-  CompilationDatabase: build-clangd
+  CompilationDatabase: build/ninja-msvc
   Compiler: clang-cl
   Add:
     - --target=x86_64-pc-windows-msvc
@@ -10,9 +10,6 @@ CompileFlags:
     - /imsvcC:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/shared
     - /imsvcC:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/winrt
     - /imsvcC:/Program Files (x86)/Windows Kits/10/include/10.0.26100.0/cppwinrt
-
-Index:
-  Background: Build
 
 Diagnostics:
   ClangTidy:

@@ -7,46 +7,9 @@
   },
   "configurePresets": [
     {
-      "name": "msvc",
-      "displayName": "MSVC (Visual Studio 2026)",
-      "description": "Normal multi-config MSVC build with Debug/Release/RelWithDebInfo/MinSizeRel.",
-      "generator": "Visual Studio 18 2026",
-      "architecture": {
-        "value": "x64",
-        "strategy": "external"
-      },
-      "binaryDir": "${sourceDir}/build/msvc"
-    },
-    {
-      "name": "msvc-pgo-generate",
-      "displayName": "MSVC Release PGO Generate",
-      "description": "Release build instrumented for PGO training. Run the app/plugin in typical scenarios after building this preset.",
-      "inherits": "msvc",
-      "binaryDir": "${sourceDir}/build/msvc-pgo-generate",
-      "cacheVariables": {
-        "Y2K_ENABLE_LTO": "ON",
-        "Y2K_PGO_MODE": "GENERATE",
-        "Y2K_PGO_DATA_DIR": "${sourceDir}/build/pgo/msvc"
-      }
-    },
-    {
-      "name": "msvc-pgo-use",
-      "displayName": "MSVC Release PGO Use",
-      "description": "Release build optimized with profile data collected by msvc-pgo-generate.",
-      "inherits": "msvc",
-      "binaryDir": "${sourceDir}/build/msvc-pgo-use",
-      "cacheVariables": {
-        "Y2K_ENABLE_LTO": "ON",
-        "Y2K_PGO_MODE": "USE",
-        "Y2K_PGO_DATA_DIR": "${sourceDir}/build/pgo/msvc"
-      }
-    },
-    {
-      "name": "clangd-msvc",
-      "displayName": "clangd index database (MSVC + Ninja)",
-      "description": "Generates build-clangd/compile_commands.json for clangd without touching the normal MSVC build directory.",
-      "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build-clangd",
+      "name": "ninja-msvc-base",
+      "hidden": true,
+      "generator": "Ninja Multi-Config",
       "architecture": {
         "value": "x64",
         "strategy": "external"
@@ -59,54 +22,79 @@
         "LIB": "D:/Microsoft Visual Studio/18/BuildTools/VC/Tools/MSVC/14.50.35717/lib/x64;D:/Microsoft Visual Studio/18/BuildTools/VC/Tools/MSVC/14.50.35717/atlmfc/lib/x64;C:/Program Files (x86)/Windows Kits/10/lib/10.0.26100.0/ucrt/x64;C:/Program Files (x86)/Windows Kits/10/lib/10.0.26100.0/um/x64"
       },
       "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Debug",
         "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
         "CMAKE_C_COMPILER": "cl",
         "CMAKE_CXX_COMPILER": "cl"
+      }
+    },
+    {
+      "name": "ninja-msvc",
+      "displayName": "Ninja Multi-Config + MSVC",
+      "description": "Main Windows build using Ninja Multi-Config with the MSVC toolchain.",
+      "inherits": "ninja-msvc-base",
+      "binaryDir": "${sourceDir}/build/ninja-msvc"
+    },
+    {
+      "name": "ninja-msvc-pgo-generate",
+      "displayName": "Ninja MSVC Release PGO Generate",
+      "description": "Release build instrumented for PGO training. Run the app/plugin in typical scenarios after building this preset.",
+      "inherits": "ninja-msvc",
+      "binaryDir": "${sourceDir}/build/ninja-msvc-pgo-generate",
+      "cacheVariables": {
+        "Y2K_ENABLE_LTO": "ON",
+        "Y2K_PGO_MODE": "GENERATE",
+        "Y2K_PGO_DATA_DIR": "${sourceDir}/build/pgo/ninja-msvc"
+      }
+    },
+    {
+      "name": "ninja-msvc-pgo-use",
+      "displayName": "Ninja MSVC Release PGO Use",
+      "description": "Release build optimized with profile data collected by ninja-msvc-pgo-generate.",
+      "inherits": "ninja-msvc",
+      "binaryDir": "${sourceDir}/build/ninja-msvc-pgo-use",
+      "cacheVariables": {
+        "Y2K_ENABLE_LTO": "ON",
+        "Y2K_PGO_MODE": "USE",
+        "Y2K_PGO_DATA_DIR": "${sourceDir}/build/pgo/ninja-msvc"
       }
     }
   ],
   "buildPresets": [
     {
-      "name": "msvc-debug",
-      "displayName": "MSVC Debug",
-      "configurePreset": "msvc",
+      "name": "ninja-msvc-debug",
+      "displayName": "Ninja MSVC Debug",
+      "configurePreset": "ninja-msvc",
       "configuration": "Debug"
     },
     {
-      "name": "msvc-release",
-      "displayName": "MSVC Release",
-      "configurePreset": "msvc",
+      "name": "ninja-msvc-release",
+      "displayName": "Ninja MSVC Release",
+      "configurePreset": "ninja-msvc",
       "configuration": "Release"
     },
     {
-      "name": "msvc-pgo-generate",
-      "displayName": "MSVC Release PGO Generate",
-      "configurePreset": "msvc-pgo-generate",
+      "name": "ninja-msvc-pgo-generate",
+      "displayName": "Ninja MSVC Release PGO Generate",
+      "configurePreset": "ninja-msvc-pgo-generate",
       "configuration": "Release"
     },
     {
-      "name": "msvc-pgo-use",
-      "displayName": "MSVC Release PGO Use",
-      "configurePreset": "msvc-pgo-use",
+      "name": "ninja-msvc-pgo-use",
+      "displayName": "Ninja MSVC Release PGO Use",
+      "configurePreset": "ninja-msvc-pgo-use",
       "configuration": "Release"
     },
     {
-      "name": "msvc-relwithdebinfo",
-      "displayName": "MSVC RelWithDebInfo",
-      "configurePreset": "msvc",
+      "name": "ninja-msvc-relwithdebinfo",
+      "displayName": "Ninja MSVC RelWithDebInfo",
+      "configurePreset": "ninja-msvc",
       "configuration": "RelWithDebInfo"
     },
     {
-      "name": "msvc-minsizerel",
-      "displayName": "MSVC MinSizeRel",
-      "configurePreset": "msvc",
+      "name": "ninja-msvc-minsizerel",
+      "displayName": "Ninja MSVC MinSizeRel",
+      "configurePreset": "ninja-msvc",
       "configuration": "MinSizeRel"
-    },
-    {
-      "name": "clangd-msvc",
-      "displayName": "clangd index database (MSVC + Ninja)",
-      "configurePreset": "clangd-msvc"
     }
   ]
 }
